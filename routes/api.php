@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ApController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\CompanyController;
@@ -35,7 +36,7 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     ]);
 
     Route::post("role/validate", [RoleController::class, "validate_name"]);
-    Route::patch("archive/{id}", [RoleController::class, "destroy"]);
+    Route::patch("archive/role/{id}", [RoleController::class, "destroy"]);
     Route::apiResource("role", RoleController::class);
 
     Route::patch("archive/company/{id}", [CompanyController::class, "destroy"]);
@@ -52,6 +53,8 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
         "destroy",
     ]);
     Route::apiResource("location", LocationController::class);
+    Route::patch("archive/ap/{id}", [ApController::class, "destroy"]);
+    Route::apiResource("ap_tagging", ApController::class);
 });
 
 Route::post("auth/login", [AuthController::class, "login"]);

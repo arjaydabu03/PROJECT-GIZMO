@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\RoleResource;
+use App\Http\Resources\ApTagResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
@@ -44,6 +45,7 @@ class UserResource extends JsonResource
             ],
             "username" => $this->username,
             "role" => new RoleResource($this->role),
+            "scope_tagging" => ApTagResource::collection($this->scope_tagging),
 
             "updated_at" => $this->updated_at,
         ];

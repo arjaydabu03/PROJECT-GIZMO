@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Functions\GlobalFunction;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoleResource;
+use App\Http\Requests\Role\StoreRequest;
 use App\Http\Requests\DisplayValidate\DisplayRequest;
 
 class RoleController extends Controller
@@ -32,7 +33,7 @@ class RoleController extends Controller
 
         return GlobalFunction::response_function(Status::ROLE_DISPLAY, $role);
     }
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         $access_permission = $request->access_permission;
         $accessConvertedToString = implode(", ", $access_permission);
@@ -43,7 +44,7 @@ class RoleController extends Controller
         ]);
         return GlobalFunction::save(Status::ROLE_SAVE, $role);
     }
-    public function update(Request $request, $id)
+    public function update(StoreRequest $request, $id)
     {
         $role = Role::find($id);
 

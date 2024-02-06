@@ -7,6 +7,7 @@ use App\Responses\Status;
 use Illuminate\Http\Request;
 use App\Functions\GlobalFunction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Location\StoreRequest;
 use App\Http\Requests\DisplayValidate\DisplayRequest;
 
 class LocationController extends Controller
@@ -26,15 +27,12 @@ class LocationController extends Controller
         if ($is_empty) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
-
-        // RoleResource::collection($location);
-
         return GlobalFunction::response_function(
             Status::LCOATION_DISPLAY,
             $location
         );
     }
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         $location = Locations::create([
             "code" => $request->code,
@@ -42,7 +40,7 @@ class LocationController extends Controller
         ]);
         return GlobalFunction::save(Status::LOCATION_SAVE, $location);
     }
-    public function update(Request $request, $id)
+    public function update(StoreRequest $request, $id)
     {
         $location = Locations::find($id);
 

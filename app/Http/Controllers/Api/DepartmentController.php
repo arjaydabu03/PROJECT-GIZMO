@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Functions\GlobalFunction;
 use App\Models\DepartmentLocation;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Department\StoreRequest;
 use App\Http\Requests\DisplayValidate\DisplayRequest;
 
 class DepartmentController extends Controller
@@ -16,7 +17,7 @@ class DepartmentController extends Controller
     {
         $status = $request->status;
 
-        $department = Departments::when($status === "inactive", function (
+        $department = Departments::with("scope_locations")->when($status === "inactive", function (
             $query
         ) {
             $query->onlyTrashed();
@@ -29,15 +30,12 @@ class DepartmentController extends Controller
         if ($is_empty) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
-
-        // RoleResource::collection($department);
-
         return GlobalFunction::response_function(
-            Status::DEPARMENT_DISPLAY,
+            Status::DEPARTMENT_DISPLAY,
             $department
         );
     }
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         $department = new Departments([
             "code" => $request->code,
@@ -55,7 +53,7 @@ class DepartmentController extends Controller
         }
         return GlobalFunction::save(Status::DEPARTMENT_SAVE, $department);
     }
-    public function update(Request $request, $id)
+    public function update(StoreRequest $request, $id)
     {
         $scope_location = $request->scope_location;
         $department = Departments::find($id);
@@ -66,31 +64,6 @@ class DepartmentController extends Controller
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
 
-        // // SCOPE FOR LOCATION
-        // $newTaggedlocation = collect($scope_location)
-        //     ->pluck("department_id")
-        //     ->toArray();
-        // $currentTaggedlocation = DepartmentLocation::where("department_id", $id)
-        //     ->get()
-        //     ->pluck("location_id")
-        //     ->toArray();
-
-        // foreach ($currentTaggedlocation as $location_id) {
-        //     if (!in_array($location_id, $newTaggedlocation)) {
-        //         DepartmentLocation::where("location_id", $id)
-        //             ->where("location_id", $location_id)
-        //             ->delete();
-        //     }
-        // }
-        // foreach ($scope_location as $index => $value) {
-        //     if (!in_array($value["id"], $currentTaggedlocation)) {
-        //         DepartmentLocation::create([
-        //             "department_id" => $id,
-        //             "location_id" => $value["id"],
-        //             "location_code" => $value["code"],
-        //         ]);
-        //     }
-        // }
         $department->update([
             "code" => $request["code"],
             "name" => $request["name"],

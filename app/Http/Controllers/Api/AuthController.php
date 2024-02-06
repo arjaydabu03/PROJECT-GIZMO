@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Responses\Status;
+use App\Models\ApTagAccount;
 use Illuminate\Http\Request;
 use App\Functions\GlobalFunction;
 use App\Http\Controllers\Controller;
@@ -22,9 +23,10 @@ class AuthController extends Controller
     {
         $status = $request->status;
 
-        $users = User::when($status === "inactive", function ($query) {
-            $query->onlyTrashed();
-        })
+        $users = User::with("scope_tagging")
+            ->when($status === "inactive", function ($query) {
+                $query->onlyTrashed();
+            })
             ->useFilters()
             ->dynamicPaginate();
 
@@ -44,9 +46,7 @@ class AuthController extends Controller
         if ($not_found->isEmpty()) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
-        $users = User::where("id", $id)
-            // ->with("scope_approval", "scope_order")
-            ->get();
+        $users = User::where("id", $id)->get();
         $user_collection = UserResource::collection($users);
 
         return GlobalFunction::response_function(
@@ -57,7 +57,7 @@ class AuthController extends Controller
 
     public function store(StoreRequest $request)
     {
-        $user = User::create([
+        $user = new User([
             "id_no" => $request["id_no"],
             "id_prefix" => $request["id_prefix"],
 
@@ -84,6 +84,18 @@ class AuthController extends Controller
             "username" => $request["username"],
             "password" => Hash::make($request["username"]),
         ]);
+
+        $user->save();
+
+        $ap_tagging = $request["ap_tagging"];
+
+        foreach ($ap_tagging as $key => $value) {
+            ApTagAccount::create([
+                "account_id" => $user->id,
+                "ap_id" => $ap_tagging[$key]["id"],
+                "ap_code" => $ap_tagging[$key]["code"],
+            ]);
+        }
 
         $user = new UserResource($user);
 
@@ -194,6 +206,8 @@ class AuthController extends Controller
 
             "username" => $request["username"],
         ]);
+
+        $user->ap_tagging()->sync($request->ap_tagging);
 
         $user = new UserResource($user);
 

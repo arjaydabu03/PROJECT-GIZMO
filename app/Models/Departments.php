@@ -29,4 +29,9 @@ class Departments extends Model
             "id"
         );
     }
+
+    function scope_locations()
+    {
+        return $this->hasMany(DepartmentLocation::class, "department_id", "id");
+    }
 }

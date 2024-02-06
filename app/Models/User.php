@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -47,10 +48,27 @@ class User extends Authenticatable
 
     protected string $default_filters = AuthFilter::class;
 
-    protected $hidden = ["password"];
+    protected $hidden = ["password", "remember_token"];
 
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function ap_tagging()
+    {
+        return $this->belongsToMany(
+            ApTagAccount::class,
+            "ap_account",
+            "account_id",
+            "ap_id",
+            "id",
+            "id"
+        );
+    }
+
+    function scope_tagging()
+    {
+        return $this->hasMany(ApTagAccount::class, "account_id", "id");
     }
 }

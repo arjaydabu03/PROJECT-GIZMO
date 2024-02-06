@@ -2,88 +2,88 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Company;
+use App\Models\ApTagging;
 use App\Responses\Status;
 use Illuminate\Http\Request;
 use App\Functions\GlobalFunction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Company\StoreRequest;
+use App\Http\Requests\Tagging\StoreRequest;
 use App\Http\Requests\DisplayValidate\DisplayRequest;
 
-class CompanyController extends Controller
+class ApController extends Controller
 {
     public function index(DisplayRequest $request)
     {
         $status = $request->status;
 
-        $company = Company::when($status === "inactive", function ($query) {
+        $tagging = ApTagging::when($status === "inactive", function ($query) {
             $query->onlyTrashed();
         })
             ->useFilters()
             ->dynamicPaginate();
 
-        $is_empty = $company->isEmpty();
+        $is_empty = $tagging->isEmpty();
 
         if ($is_empty) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
 
         return GlobalFunction::response_function(
-            Status::COMPANY_DISPLAY,
-            $company
+            Status::TAGGING_DISPLAY_DISPLAY,
+            $tagging
         );
     }
     public function store(StoreRequest $request)
     {
-        $company = Company::create([
-            "code" => $request->code,
-            "name" => $request->name,
+        $tagging = ApTagging::create([
+            "company_code" => $request->company_code,
+            "description" => $request->description,
         ]);
-        return GlobalFunction::save(Status::COMPANY_SAVE, $company);
+        return GlobalFunction::save(Status::TAGGING_SAVE, $tagging);
     }
     public function update(StoreRequest $request, $id)
     {
-        $company = Company::find($id);
+        $tagging = ApTagging::find($id);
 
-        $not_found = Company::where("id", $id)->get();
+        $not_found = ApTagging::where("id", $id)->get();
 
         if ($not_found->isEmpty()) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
-        $company->update([
-            "code" => $request["code"],
-            "name" => $request["name"],
+        $tagging->update([
+            "company_code" => $request["company_code"],
+            "description" => $request["description"],
         ]);
 
         return GlobalFunction::response_function(
-            Status::COMPANY_UPDATE,
-            $company
+            Status::TAGGING_UPDATE,
+            $tagging
         );
     }
 
     public function destroy($id)
     {
-        $company = Company::where("id", $id)
+        $tagging = ApTagging::where("id", $id)
             ->withTrashed()
             ->get();
 
-        if ($company->isEmpty()) {
+        if ($tagging->isEmpty()) {
             return GlobalFunction::not_found(Status::NOT_FOUND);
         }
 
-        $company = Company::withTrashed()->find($id);
-        $is_active = Company::withTrashed()
+        $tagging = ApTagging::withTrashed()->find($id);
+        $is_active = ApTagging::withTrashed()
             ->where("id", $id)
             ->first();
         if (!$is_active) {
             return $is_active;
         } elseif (!$is_active->deleted_at) {
-            $company->delete();
+            $tagging->delete();
             $message = Status::ARCHIVE_STATUS;
         } else {
-            $company->restore();
+            $tagging->restore();
             $message = Status::RESTORE_STATUS;
         }
-        return GlobalFunction::response_function($message, $company);
+        return GlobalFunction::response_function($message, $tagging);
     }
 }
